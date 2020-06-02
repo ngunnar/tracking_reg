@@ -28,7 +28,7 @@ class CustomDataGenerator(tf.keras.utils.Sequence):
         if points is None:
             points = np.random.randint(50) + 150
                 
-        dense = tfdeform.random_deformation_linear(
+        dense = tfdeform.random_deformation_momentum(
             shape=[self.batch_size, self.input_dim[0], self.input_dim[1]], std=s, distance=d)
         
         #noise = np.random.normal(loc=0.0, scale=d/10, size=(self.batch_size, self.input_dim[0], self.input_dim[1], 1))
