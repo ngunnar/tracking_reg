@@ -18,7 +18,7 @@ class ResNet18m1(MultiFeatureBase):
         net_path: Relative or absolute net path (default should be fine).
         use_gpu: Use GPU or CPU.
     """
-    def __init__(self,  output_layers, net_path=None, use_gpu=True, *args, **kwargs):
+    def __init__(self,  output_layers, net_path=None, use_gpu=True, gpu_device=None, *args, **kwargs):
         super(ResNet18m1, self).__init__(*args, **kwargs)
 
         for l in output_layers:
@@ -27,9 +27,10 @@ class ResNet18m1(MultiFeatureBase):
 
         self.output_layers = list(output_layers)
         self.use_gpu = use_gpu
+        self.gpu_device = gpu_device
         self.net_path = 'resnet18_vggmconv1/resnet18_vggmconv1.pth' if net_path is None else net_path
 
-    def initialize(self):
+    def initialize(self, im):
         if os.path.isabs(self.net_path):
             net_path_full = self.net_path
         else:
@@ -41,12 +42,15 @@ class ResNet18m1(MultiFeatureBase):
         self.layer_stride = {'vggconv1': 2, 'conv1': 2, 'layer1': 4, 'layer2': 8, 'layer3': 16, 'layer4': 32, 'fc': None}
         self.layer_dim = {'vggconv1': 96, 'conv1': 64, 'layer1': 64, 'layer2': 128, 'layer3': 256, 'layer4': 512, 'fc': None}
 
-        self.mean = torch.Tensor([0.485, 0.456, 0.406]).view(1,-1,1,1)
-        self.std = torch.Tensor([0.229, 0.224, 0.225]).view(1,-1,1,1)
+        #self.mean = torch.Tensor([0.485, 0.456, 0.406]).view(1,-1,1,1)
+        #self.std = torch.Tensor([0.229, 0.224, 0.225]).view(1,-1,1,1)
+        im = im/255
+        self.mean = torch.Tensor([torch.mean(im[:,0,...]), torch.mean(im[:,1,...]), torch.mean(im[:,2,...])]).view(1,-1,1,1)
+        self.std = torch.Tensor([torch.std(im[:,0,...]), torch.std(im[:,1,...]), torch.std(im[:,2,...])]).view(1,-1,1,1)
 
         self.net = resnet18_vggmconv1(self.output_layers, path=net_path_full)
         if self.use_gpu:
-            self.net.cuda()
+            self.net.cuda(self.gpu_device) if not (self.gpu_device is None) else self.net.cuda()
         self.net.eval()
 
     def dim(self):
@@ -61,7 +65,7 @@ class ResNet18m1(MultiFeatureBase):
         im /= self.std
 
         if self.use_gpu:
-            im = im.cuda()
+            im = im.cuda(self.gpu_device) if not (self.gpu_device is None) else im.cuda()
 
         with torch.no_grad():
             return TensorList(self.net(im).values())

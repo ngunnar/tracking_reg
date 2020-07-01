@@ -10,9 +10,9 @@ class ExtractorBase:
     def __init__(self, features):
         self.features = features
 
-    def initialize(self):
+    def initialize(self, im=None):
         for f in self.features:
-            f.initialize()
+            f.initialize(im)
 
 
 class SingleResolutionExtractor(ExtractorBase):
