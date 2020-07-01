@@ -22,8 +22,7 @@ class ImageReader():
         self.seg_files = glob.glob(seg_path + '/*.mat')
         self.seg_files.sort(key=lambda l: grp(l))
         self.img_heigth = img_heigth
-        self.img_width = img_width
-    
+        self.img_width = img_width    
 
     def read_image(self, patient, frame = 0, z_pos = 4):
         image_file = self.data_files[patient]
@@ -59,11 +58,19 @@ class ImageReader():
 
         endo_path = matplotlib.path.Path(endo_data)
         ventricle_mask = endo_path.contains_points(points)
-        ventricle_mask.shape = xv.shape
-    
+        ventricle_mask.shape = xv.shape        
+        
         epi_path = matplotlib.path.Path(epi_data)
         myo_mask = epi_path.contains_points(points)
         myo_mask.shape = xv.shape
         myo_mask = (myo_mask.astype(int) - ventricle_mask.astype(int)).astype('bool')
+        
+        endo = np.zeros((self.img_heigth, self.img_width))
+        epi = np.zeros((self.img_heigth, self.img_width))
+        for p in endo_data:
+            endo[int(p[1]), int(p[0])] = 1
+            
+        for p in epi_data:
+            epi[int(p[1]), int(p[0])] = 1
 
-        return image, [ventricle_mask, myo_mask]
+        return image, [ventricle_mask, myo_mask], [endo, epi]
