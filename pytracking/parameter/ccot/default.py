@@ -72,7 +72,7 @@ def parameters(gpu_device = 0):
     fparams = FeatureParams(feature_params=[shallow_params, deep_params])
     features = deep.ResNet18m1(output_layers=['vggconv1', 'layer3'], 
                                use_gpu=params.use_gpu, 
-                               gpu = gpu_device, 
+                               gpu_device = gpu_device, 
                                fparams=fparams, 
                                pool_stride=[2, 1], 
                                normalize_power=2)
