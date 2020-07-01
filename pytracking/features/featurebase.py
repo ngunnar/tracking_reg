@@ -21,7 +21,7 @@ class FeatureBase:
         self.use_for_color = use_for_color
         self.use_for_gray = use_for_gray
 
-    def initialize(self):
+    def initialize(self, im=None):
         pass
 
     def dim(self):
